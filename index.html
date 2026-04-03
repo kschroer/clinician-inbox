@@ -1808,6 +1808,86 @@ const threads = [
       { type: 'system-resolve', text: 'Resolved by Sarah Nguyen', time: new Date(Date.now() - 45*24*60*60*1000 + 60000) },
     ],
   },
+  // ── SCENARIO: Caregiver re-opens old conversation (NEW topic) ──
+  // SSI thread auto-resolved, caregiver reopens with nutrition/meal plan question.
+  // Should stay in same inbox; team member can manually re-assign to nutrition.
+  {
+    id: 'rt1', patientName: 'Ava Mitchell', patientAge: 5,
+    conditions: ['Developmental Delay', 'Failure to Thrive'], healthPlan: 'Medicaid', pathways: ['medical'],
+    carePod: 'East Pod B', inbox: 'East Pod B',
+    title: 'SSI paperwork help',
+    status: 'unassigned', assignedTo: null, isUrgent: false,
+    lastMsgTime: minsAgo(8), lastMsgSender: 'caregiver',
+    lastMsgContent: 'Hey, different question — I need help with Ava\'s meal plan. The nutritionist gave us a plan but I don\'t understand the portions.',
+    lastClinicianReply: null,
+    messages: [
+      { type: 'system', text: 'Chat routed to East Pod B', time: new Date(Date.now() - 20*24*60*60*1000) },
+      { type: 'caregiver', text: 'Hi, I need help filling out the SSI application for Ava. I\'m stuck on the section about her daily needs.', time: new Date(Date.now() - 20*24*60*60*1000 + 5*60000) },
+      { type: 'clinician', senderName: 'Sarah Nguyen', text: 'Happy to help! For the daily needs section, focus on what Ava needs help with compared to other kids her age — feeding, dressing, mobility, etc.', time: new Date(Date.now() - 20*24*60*60*1000 + 30*60000) },
+      { type: 'caregiver', text: 'That helps a lot, thank you! I\'ll fill it out and let you know if I have more questions.', time: new Date(Date.now() - 20*24*60*60*1000 + 45*60000) },
+      { type: 'clinician', senderName: 'Sarah Nguyen', text: 'Sounds good! We\'re here whenever you need us.', time: new Date(Date.now() - 20*24*60*60*1000 + 50*60000) },
+      { type: 'system-resolve', text: formatAutoResolve(new Date(Date.now() - 6*24*60*60*1000)), time: new Date(Date.now() - 6*24*60*60*1000) },
+      { type: 'caregiver', text: 'Hey, different question — I need help with Ava\'s meal plan. The nutritionist gave us a plan but I don\'t understand the portions.', time: minsAgo(8) },
+    ],
+  },
+  // ── SCENARIO: Caregiver re-opens non-acute conversation with ACUTE concern ──
+  // DME/nebulizer thread resolved, caregiver reopens with breathing emergency.
+  // Should be escalated to ACT.
+  {
+    id: 'ra1', patientName: 'Mia Chen', patientAge: 4,
+    conditions: ['Asthma'], healthPlan: 'BCBS', pathways: ['medical'],
+    carePod: 'East Pod B', inbox: 'Acute Care',
+    title: 'Nebulizer supply reorder',
+    status: 'unassigned', assignedTo: null, isUrgent: true,
+    lastMsgTime: minsAgo(2), lastMsgSender: 'caregiver',
+    lastMsgContent: 'She\'s wheezing really bad and the nebulizer isn\'t working. I think she needs to go to the ER.',
+    lastClinicianReply: null,
+    messages: [
+      { type: 'system', text: 'Chat routed to East Pod B', time: new Date(Date.now() - 10*24*60*60*1000) },
+      { type: 'caregiver', text: 'Hi, we\'re running low on Mia\'s nebulizer solution. Can someone help us reorder?', time: new Date(Date.now() - 10*24*60*60*1000 + 5*60000) },
+      { type: 'clinician', senderName: 'Sarah Nguyen', text: 'Of course! I\'ll put in the order with the pharmacy now. You should receive it within 2-3 business days.', time: new Date(Date.now() - 10*24*60*60*1000 + 20*60000) },
+      { type: 'caregiver', text: 'Perfect, thank you so much!', time: new Date(Date.now() - 10*24*60*60*1000 + 25*60000) },
+      { type: 'system-resolve', text: formatAutoResolve(new Date(Date.now() - 3*24*60*60*1000)), time: new Date(Date.now() - 3*24*60*60*1000) },
+      { type: 'caregiver', text: 'She\'s wheezing really bad and the nebulizer isn\'t working. I think she needs to go to the ER.', time: minsAgo(2) },
+      { type: 'system-escalate', text: 'Acute concern detected — chat escalated to Acute Care', time: minsAgo(2) },
+    ],
+  },
+  // ── SCENARIO: Non-acute turns acute MID-CONVERSATION ──
+  // Caregiver starts with PT scheduling, care team responds, then caregiver adds acute concern.
+  {
+    id: 'esc1', patientName: 'Zoe Washington', patientAge: 8,
+    conditions: ['Cerebral Palsy', 'Epilepsy'], healthPlan: 'Medicaid STAR Kids', pathways: ['medical'],
+    carePod: 'East Pod B', inbox: 'Acute Care',
+    title: 'PT scheduling help',
+    status: 'unassigned', assignedTo: null, isUrgent: true,
+    lastMsgTime: minsAgo(1), lastMsgSender: 'caregiver',
+    lastMsgContent: 'Also she\'s having trouble breathing right now. Her lips look a little blue.',
+    lastClinicianReply: new Date(Date.now() - 12*60000),
+    messages: [
+      { type: 'system', text: 'Chat routed to East Pod B', time: minsAgo(20) },
+      { type: 'caregiver', text: 'Hi, we\'re having trouble scheduling Zoe\'s physical therapy. The clinic keeps rescheduling on us and she\'s missed 3 sessions.', time: minsAgo(18) },
+      { type: 'clinician', senderName: 'Sarah Nguyen', text: 'I\'m sorry to hear that! Let me reach out to the PT clinic directly and get this sorted. Which location are you going to?', time: minsAgo(12) },
+      { type: 'caregiver', text: 'Texas Children\'s on Fannin. Also she\'s having trouble breathing right now. Her lips look a little blue.', time: minsAgo(1) },
+      { type: 'system-escalate', text: 'Acute concern detected — chat escalated to Acute Care', time: minsAgo(1) },
+    ],
+  },
+  // ── SCENARIO: Multiple open conversations at the same time ──
+  // Kenji Nakamura already has an open SSI thread (sc4). This is a SECOND active thread
+  // about a different topic — medication refill. Routed independently.
+  {
+    id: 'kn2', patientName: 'Kenji Nakamura', patientAge: 11,
+    conditions: ['Sickle Cell Disease', 'Chronic Pain'], healthPlan: 'Medicaid STAR Kids', pathways: ['medical'],
+    carePod: 'East Pod B', inbox: 'East Pod B',
+    title: 'Pain medication refill',
+    status: 'unassigned', assignedTo: null, isUrgent: false,
+    lastMsgTime: minsAgo(6), lastMsgSender: 'caregiver',
+    lastMsgContent: 'I also wanted to ask about refilling Kenji\'s pain medication. We have about 4 days left.',
+    lastClinicianReply: null,
+    messages: [
+      { type: 'system', text: 'Chat routed to East Pod B', time: minsAgo(6) },
+      { type: 'caregiver', text: 'I also wanted to ask about refilling Kenji\'s pain medication. We have about 4 days left.', time: minsAgo(6) },
+    ],
+  },
 ];
 
 // ─── CAREGIVER BOT RESPONSE BANK ────────────────────────────────────────────
@@ -1880,6 +1960,36 @@ const BOT_RESPONSES = {
     unprompted: [
       "Hi, just checking in — were you able to send in the refill? He's down to his last 2 pills.",
     ],
+  },
+  'rt1': {
+    replies: [
+      "It says 2 tablespoons of puree but I don't know if that's enough. She's still hungry after meals.",
+      "Should I also be giving her the supplement drink? The nutritionist mentioned it but I wasn't sure.",
+    ],
+    unprompted: [],
+  },
+  'ra1': {
+    replies: [
+      "We're heading to the ER now. Should I bring her nebulizer with us?",
+      "We're here. They put her on oxygen. Thank you for your help.",
+    ],
+    urgentReplyIndices: [0, 1],
+    unprompted: [],
+  },
+  'esc1': {
+    replies: [
+      "Her breathing is getting worse. We're about to call 911.",
+      "The ambulance is here now. Thank you.",
+    ],
+    urgentReplyIndices: [0, 1],
+    unprompted: [],
+  },
+  'kn2': {
+    replies: [
+      "It's the hydroxyurea — 500mg capsules. His hematologist is Dr. Patel at Texas Children's.",
+      "Thank you! Can you also check if his folic acid needs refilling? I think that one is low too.",
+    ],
+    unprompted: [],
   },
 };
 
@@ -2488,6 +2598,7 @@ function selectTeam(team) {
   renderAll();
   CaregiverBot.start();
   scheduleIncomingMessage();
+
 }
 
 function showTeamSplash() {
@@ -3080,13 +3191,23 @@ function renderMessages(t) {
   // 4-pointed AI sparkle icon (matches Figma)
   const aiSparkleSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9.106 5.448C9.704 3.698 12.122 3.645 12.831 5.289L12.891 5.449L13.698 7.809C13.883 8.35 14.182 8.846 14.575 9.261C14.967 9.677 15.444 10.004 15.974 10.22L16.191 10.301L18.551 11.107C20.301 11.705 20.354 14.123 18.711 14.832L18.551 14.892L16.191 15.699C15.65 15.884 15.154 16.183 14.738 16.575C14.322 16.968 13.995 17.445 13.779 17.975L13.698 18.191L12.892 20.552C12.294 22.302 9.876 22.355 9.168 20.712L9.106 20.552L8.3 18.192C8.115 17.651 7.817 17.155 7.424 16.739C7.031 16.323 6.554 15.996 6.024 15.78L5.808 15.699L3.448 14.893C1.697 14.295 1.644 11.877 3.288 11.169L3.448 11.107L5.808 10.301C6.349 10.116 6.845 9.817 7.261 9.425C7.676 9.032 8.003 8.555 8.219 8.025L8.3 7.809L9.106 5.448ZM11 6.094L10.193 8.454C9.912 9.279 9.453 10.033 8.851 10.664C8.248 11.294 7.515 11.785 6.703 12.103L6.453 12.194L4.093 13L6.453 13.806C7.278 14.088 8.032 14.546 8.663 15.149C9.293 15.751 9.784 16.484 10.102 17.296L10.193 17.546L11 19.906L11.805 17.546C12.087 16.721 12.545 15.967 13.148 15.337C13.75 14.706 14.483 14.215 15.295 13.897L15.545 13.807L17.905 13L15.545 12.194C14.72 11.912 13.966 11.454 13.336 10.852C12.705 10.249 12.214 9.516 11.896 8.704L11.806 8.454L11 6.094ZM19 2C19.186 2 19.37 2.052 19.528 2.151C19.687 2.25 19.815 2.392 19.897 2.56L19.945 2.677L20.295 3.703L21.322 4.053C21.51 4.117 21.674 4.235 21.794 4.392C21.915 4.549 21.986 4.738 21.998 4.936C22.011 5.134 21.965 5.331 21.865 5.502C21.766 5.673 21.618 5.811 21.44 5.898L21.322 5.946L20.296 6.296L19.946 7.323C19.882 7.51 19.764 7.675 19.607 7.795C19.45 7.915 19.26 7.986 19.063 7.999C18.865 8.011 18.668 7.965 18.497 7.865C18.326 7.766 18.188 7.618 18.101 7.44L18.053 7.323L17.703 6.297L16.676 5.947C16.489 5.883 16.324 5.765 16.204 5.608C16.084 5.451 16.013 5.262 16 5.064C15.987 4.866 16.034 4.669 16.133 4.498C16.232 4.327 16.38 4.189 16.558 4.102L16.676 4.054L17.702 3.704L18.052 2.677C18.12 2.479 18.247 2.308 18.417 2.187C18.587 2.065 18.79 2 19 2Z" fill="#626262"/></svg>`;
 
+  // Pre-process: ensure "Chat routed" notes appear after the first caregiver message
+  const reordered = [...msgs];
+  if (reordered.length >= 2 && reordered[0].type === 'system' && reordered[0].text.startsWith('Chat routed')) {
+    const firstCaregiverIdx = reordered.findIndex(m => m.type === 'caregiver');
+    if (firstCaregiverIdx > 0) {
+      const [routingNote] = reordered.splice(0, 1);
+      reordered.splice(firstCaregiverIdx, 0, routingNote); // insert after caregiver (shifted by -1)
+    }
+  }
+
   // Group messages by date
   let html = '';
   let lastDateLabel = null;
   let prevSenderKey = null;
   let shownCaregiverLang = false;
 
-  msgs.forEach((m, mIdx) => {
+  reordered.forEach((m, mIdx) => {
     const msgDate = new Date(m.time);
     const today = new Date();
     const isToday = msgDate.toDateString() === today.toDateString();
@@ -4302,6 +4423,18 @@ function scheduleIncomingMessage() {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+// Deep-link: #team=acute&thread=sc1 auto-selects team and opens thread
+(() => {
+  const hash = new URLSearchParams(location.hash.replace('#', ''));
+  const deepTeam = hash.get('team');
+  const deepThread = hash.get('thread');
+  if (deepTeam) {
+    selectTeam(deepTeam);
+    if (deepThread) {
+      setTimeout(() => openOverlay(deepThread), 200);
+    }
+  }
+})();
 // Don't render until team is selected — splash screen handles init
 </script>
 </body>
