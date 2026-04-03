@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinician Inbox — Scenario Map</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Verdana, Geneva, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    padding: 32px 40px;
+  }
+  h1 {
+    font-size: 22px;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 28px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  thead th {
+    background: #345a62;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tbody tr {
+    border-bottom: 1px solid #eee;
+  }
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+  tbody tr:hover {
+    background: #f9fbfc;
+  }
+  td {
+    padding: 14px;
+    font-size: 13px;
+    vertical-align: top;
+  }
+  td:first-child, th:first-child {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+  }
+  td:first-child {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .scenario-desc {
+    font-weight: 400;
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .patient-name {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .thread-title {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+  }
+  .team-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .team-epb {
+    background: #e8f4f0;
+    color: #2a6f5a;
+  }
+  .team-acute {
+    background: #fde8e8;
+    color: #b42318;
+  }
+  .thumb-link {
+    display: block;
+    width: 280px;
+    height: 180px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    position: relative;
+    text-decoration: none;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .thumb-link:hover {
+    border-color: #345a62;
+    box-shadow: 0 2px 8px rgba(52,90,98,0.2);
+  }
+  .thumb-link iframe {
+    width: 1400px;
+    height: 900px;
+    border: none;
+    transform: scale(0.2);
+    transform-origin: top left;
+    pointer-events: none;
+  }
+  .thumb-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(52,90,98,0);
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+  .thumb-link:hover .thumb-overlay {
+    background: rgba(52,90,98,0.08);
+  }
+  .thumb-overlay span {
+    display: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    background: #345a62;
+    padding: 6px 14px;
+    border-radius: 6px;
+  }
+  .thumb-link:hover .thumb-overlay span {
+    display: block;
+  }
+  .num {
+    color: #999;
+    font-weight: 400;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Clinician Inbox — Training Scenario Map</h1>
+<p class="subtitle">Click any screenshot to open that chat thread in a new tab.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Scenario</th>
+      <th>Patient</th>
+      <th>Team Inbox</th>
+      <th>Chat Preview</th>
+    </tr>
+  </thead>
+  <tbody id="scenario-body"></tbody>
+</table>
+
+<script>
+const BASE = 'clinician-inbox-chunk2.html';
+
+const scenarios = [
+  {
+    num: 1,
+    title: 'New unassigned chat — straightforward clinical question',
+    desc: 'Caregiver asks a routine question. Chat is unassigned and waiting for a clinician to pick up.',
+    patient: 'Tyler Brooks',
+    thread: 'Asthma plan question',
+    team: 'East Pod B',
+    teamKey: 'longitudinal',
+    threadId: 'sc6',
+  },
+  {
+    num: 2,
+    title: 'New unassigned chat — urgent / acute concern',
+    desc: 'Caregiver reports an urgent medical issue. Chat is flagged urgent and waiting for assignment.',
+    patient: 'Sofia Reyes',
+    thread: 'Seizure — needs urgent guidance',
+    team: 'Acute Care',
+    teamKey: 'acute',
+    threadId: 'sc5',
+  },
+  {
+    num: 3,
+    title: 'Assigned to me — active back-and-forth',
+    desc: 'Clinician and caregiver are in an active conversation with multiple exchanges.',
+    patient: 'Marcus Rivera',
+    thread: 'Vomiting and fever since this morning',
+    team: 'Acute Care',
+    teamKey: 'acute',
+    threadId: 'sc1',
+  },
+  {
+    num: 4,
+    title: 'Assigned to me — caregiver needs response',
+    desc: 'Caregiver sent a message and is waiting for the clinician to reply.',
+    patient: 'Marcus Webb',
+    thread: 'Medication refill — Concerta',
+    team: 'East Pod B',
+    teamKey: 'longitudinal',
+    threadId: 'mw1',
+  },
+  {
+    num: 5,
+    title: 'Multiple questions in a single thread',
+    desc: 'Caregiver raises several concerns at once (sleep, SSI, meds) in one message.',
+    patient: 'Destiny Williams',
+    thread: 'Multiple questions — sleep, SSI, and meds',
+    team: 'East Pod B',
+    teamKey: 'longitudinal',
+    threadId: 'sc8',
+  },
+  {
+    num: 6,
+    title: 'Caregiver re-opens resolved chat with new topic',
+    desc: 'Previously resolved SSI thread is reopened with a new question about meal plans.',
+    patient: 'Ava Mitchell',
+    thread: 'SSI paperwork help',
+    team: 'East Pod B',
+    teamKey: 'longitudinal',
+    threadId: 'rt1',
+  },
+  {
+    num: 7,
+    title: 'Caregiver re-opens resolved chat with acute concern',
+    desc: 'Previously resolved nebulizer thread is reopened with an urgent wheezing emergency.',
+    patient: 'Mia Chen',
+    thread: 'Nebulizer supply reorder',
+    team: 'Acute Care',
+    teamKey: 'acute',
+    threadId: 'ra1',
+  },
+  {
+    num: 8,
+    title: 'Non-acute conversation turns acute mid-thread',
+    desc: 'Routine PT scheduling chat escalates when caregiver reports breathing difficulty.',
+    patient: 'Zoe Washington',
+    thread: 'PT scheduling help',
+    team: 'Acute Care',
+    teamKey: 'acute',
+    threadId: 'esc1',
+  },
+  {
+    num: 9,
+    title: 'Patient has multiple open conversations',
+    desc: 'Same patient has two active threads — SSI paperwork and pain medication refill.',
+    patient: 'Kenji Nakamura',
+    thread: 'SSI paperwork + Pain medication refill',
+    team: 'East Pod B',
+    teamKey: 'longitudinal',
+    threadId: 'sc4',
+    threadId2: 'kn2',
+  },
+  {
+    num: 10,
+    title: 'Non-urgent message outside business hours',
+    desc: 'Caregiver sends a non-urgent message after hours and requests a live conversation.',
+    patient: 'Liam Patterson',
+    thread: 'IEP coordination with school',
+    team: 'Acute Care',
+    teamKey: 'acute',
+    threadId: 'sc5b',
+  },
+  {
+    num: 11,
+    title: 'Social / behavioral health needs',
+    desc: 'Caregiver raises non-clinical concerns — wheelchair repair, food insecurity, social services.',
+    patient: 'Amara Johnson',
+    thread: 'Wheelchair repair — vendor not responding',
+    team: 'East Pod B',
+    teamKey: 'longitudinal',
+    threadId: 'sc2',
+  },
+];
+
+function makeThumb(teamKey, threadId) {
+  const url = `${BASE}#team=${teamKey}&thread=${threadId}`;
+  return `<a class="thumb-link" href="${url}" target="_blank" rel="noopener">
+    <iframe src="${url}" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>
+    <div class="thumb-overlay"><span>Open thread ↗</span></div>
+  </a>`;
+}
+
+const tbody = document.getElementById('scenario-body');
+scenarios.forEach(s => {
+  const teamClass = s.team === 'Acute Care' ? 'team-acute' : 'team-epb';
+  let thumbs = makeThumb(s.teamKey, s.threadId);
+  if (s.threadId2) {
+    thumbs += `<div style="height:8px"></div>` + makeThumb(s.teamKey, s.threadId2);
+  }
+  tbody.innerHTML += `<tr>
+    <td><span class="num">${s.num}</span></td>
+    <td>
+      <div>${s.title}</div>
+      <div class="scenario-desc">${s.desc}</div>
+    </td>
+    <td>
+      <div class="patient-name">${s.patient}</div>
+      <div class="thread-title">${s.thread}</div>
+    </td>
+    <td><span class="team-badge ${teamClass}">${s.team}</span></td>
+    <td>${thumbs}</td>
+  </tr>`;
+});
+</script>
+
+</body>
+</html>
