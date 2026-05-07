@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Care Team Inbox</title>
+<title>Clinician Inbox</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; font-family: Verdana, Geneva, sans-serif; background: #efefef; font-size: 14px; }
@@ -1513,7 +1513,7 @@
 </div><!-- /app -->
 
 <div id="team-splash" style="position:fixed;inset:0;background:#173238;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Verdana,Geneva,sans-serif;color:white;">
-  <h1 style="font-size:28px;margin-bottom:8px;">Care Team Inbox</h1>
+  <h1 style="font-size:28px;margin-bottom:8px;">Clinician Inbox</h1>
   <p style="font-size:16px;color:#a0c4cc;margin-bottom:40px;">Training Prototype</p>
   <p style="font-size:18px;margin-bottom:24px;">Which team are you on?</p>
   <div style="display:flex;gap:16px;">
@@ -1860,15 +1860,15 @@ const threads = [
     carePod: 'East Pod B', inbox: 'Acute Care',
     title: 'PT scheduling help',
     status: 'unassigned', assignedTo: null, isUrgent: true,
-    lastMsgTime: minsAgo(1), lastMsgSender: 'caregiver',
+    lastMsgTime: todayAt(21, 4), lastMsgSender: 'caregiver',
     lastMsgContent: 'Also she\'s having trouble breathing right now. Her lips look a little blue.',
-    lastClinicianReply: new Date(Date.now() - 12*60000),
+    lastClinicianReply: todayAt(15, 5),
     messages: [
-      { type: 'system', text: 'Chat routed to East Pod B', time: minsAgo(20) },
-      { type: 'caregiver', text: 'Hi, we\'re having trouble scheduling Zoe\'s physical therapy. The clinic keeps rescheduling on us and she\'s missed 3 sessions.', time: minsAgo(18) },
-      { type: 'clinician', senderName: 'Sarah Nguyen', text: 'I\'m sorry to hear that! Let me reach out to the PT clinic directly and get this sorted. Which location are you going to?', time: minsAgo(12) },
-      { type: 'caregiver', text: 'Texas Children\'s on Fannin. Also she\'s having trouble breathing right now. Her lips look a little blue.', time: minsAgo(1) },
-      { type: 'system-escalate', text: 'Acute concern detected — chat escalated to Acute Care', time: minsAgo(1) },
+      { type: 'system', text: 'Chat routed to East Pod B', time: todayAt(14, 58) },
+      { type: 'caregiver', text: 'Hi, we\'re having trouble scheduling Zoe\'s physical therapy. The clinic keeps rescheduling on us and she\'s missed 3 sessions.', time: todayAt(15, 0) },
+      { type: 'clinician', senderName: 'Sarah Nguyen', text: 'I\'m sorry to hear that! Let me reach out to the PT clinic directly and get this sorted. Which location are you going to?', time: todayAt(15, 5) },
+      { type: 'caregiver', text: 'Texas Children\'s on Fannin. Also she\'s having trouble breathing right now. Her lips look a little blue.', time: todayAt(21, 4) },
+      { type: 'system-escalate', text: 'Acute concern detected — chat escalated to Acute Care', time: todayAt(21, 4) },
     ],
   },
   // ── SCENARIO: Multiple open conversations at the same time ──
@@ -1997,6 +1997,15 @@ const BOT_RESPONSES = {
 
 function minsAgo(n) {
   return new Date(Date.now() - n * 60000);
+}
+
+// Returns a Date for today at h:m (24h). If that time hasn't occurred yet today,
+// returns yesterday at h:m so the timestamp is always in the past.
+function todayAt(h, m) {
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1);
+  return d;
 }
 
 function formatAutoResolve(d) {
